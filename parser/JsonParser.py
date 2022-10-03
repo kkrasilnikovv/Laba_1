@@ -1,13 +1,20 @@
 import json
 
 
-def deserialize():
-    with open("data.json", 'r') as fp:
-        data = json.load(fp)
-    return data
+def deserialize(path):
+    try:
+        with open(path, 'r') as fp:
+            data = json.load(fp)
+        return data
+    except FileNotFoundError:
+        print("Не найден файл: " + path)
 
 
-def serialize(data):
-    with open("data.json", "w") as write_file:
-        json.dump(data, write_file, indent=4)
-    #write_file.close()
+
+def serialize(data, path):
+    try:
+        with open(path, "w") as write_file:
+            json.dump(data, write_file, indent=4)
+    except FileNotFoundError:
+        print("Не найден файл: " + path)
+    # write_file.close()

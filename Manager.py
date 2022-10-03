@@ -3,7 +3,8 @@ from parser.JsonParser import serialize
 from model.User import User
 from parser.XMLParser import XMLserialization
 from parser.XMLParser import XMLdeserialization
-import os
+from model.Book import Book
+from exception.NonFindException import NonFindException
 
 
 def print_menu():
@@ -18,7 +19,9 @@ def print_menu():
           "8.Удалить книгу" + "\n" +
           "9.Показать всех пользователей и все книги" + "\n" +
           "10.Выйти" + "\n" +
-          "11.Очистить базу пользователей" + "\n"
+          "11.Очистить базу пользователей" + "\n" +
+          "12.Обновить пользователя" + "\n" +
+          "13.Обновить книгу" + "\n"
           )
 
 
@@ -26,27 +29,40 @@ users = {}
 books = {}
 
 
-def save_xml():
+def save_xml(path):
+    data = []
     for key, val in books.items():
-        print(val)
-        XMLserialization(val)
+        data.append(val.__dict__)
+    XMLserialization(data, path)
 
 
-def save_json():
+def save_json(path):
     data = {}
+    for key, val in users.items():
+        users[key] = val.__dict__
     data["users"] = users
-    serialize(data)
+    serialize(data, path)
 
 
-def load_xml():
-    books[XMLdeserialization("dick.xml")[0].serial_number]=XMLdeserialization("dick.xml")[0]
+def load_xml(data):
+    try:
+        for el in XMLdeserialization(data):
+            books[el.serial_number] = el
+    except FileNotFoundError:
+        print("Не удается найти указанный файл: " + data)
+    except TypeError:
+        print("Не удается найти указанный файл: " + data)
 
 
-def load_json():
-    if os.stat("data.json").st_size != 0:
-        for key, val in deserialize()["users"].items():
+def load_json(data):
+    try:
+        for key, val in deserialize(data)["users"].items():
             users[int(key)] = User(int(key), val["name"], val["book"])
         return users
+    except FileNotFoundError:
+        print("Не удается найти указанный файл: " + data)
+    except TypeError:
+        print()
 
 
 def remove_json():
@@ -55,16 +71,10 @@ def remove_json():
 
 def add_user(data):
     users[data.serial_number] = data
-    books.get(1)
 
 
 def remove_user(data):
-    try:
-        users.pop(int(data))
-    except ValueError:
-        print("Ошибка валидации данных")
-    except KeyError:
-        print("Ошибка валидации данных")
+    users.pop(int(data))
 
 
 def print_all_users():
@@ -79,12 +89,8 @@ def add_book(data):
 
 
 def remove_book(data):
-    try:
-        books.pop(int(data))
-    except ValueError:
-        print("Ошибка валидации данных")
-    except KeyError:
-        print("Ошибка валидации данных")
+    books.pop(int(data))
+
 
 
 def print_all_books():
@@ -95,18 +101,32 @@ def print_all_books():
 
 
 def add_book_to_user(user, book_id):
-    try:
-        users.get(int(user)).book.append(books.get(int(book_id)).serial_number)
-    except ValueError:
-        print("Ошибка валидации данных111")
-    except AttributeError:
-        print("Ошибка валидации данных")
+    users.get(user).book.append(books.get(book_id).serial_number)
 
 
 def remove_book_to_user(user, book_id):
-    try:
-        users.get(int(user)).book.remove(int(book_id))
-    except ValueError:
-        print("Ошибка валидации данных")
-    except AttributeError:
-        print("Ошибка валидации данных")
+    users.get(int(user)).book.remove(int(book_id))
+
+
+def update_user(user_id, data):
+    a=users.get(user_id).book
+    data.book=a
+    users[user_id] = data
+
+
+def update_book(book_id, data):
+    books[book_id] = data
+
+
+def is_user_exist(data):
+    if users.get(data, None) is None:
+        return False
+    else:
+        return True
+
+
+def is_book_exist(data):
+    if books.get(data, None) is None:
+        return False
+    else:
+        return True

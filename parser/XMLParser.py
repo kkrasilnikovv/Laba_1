@@ -3,18 +3,23 @@ from model.Book import Book
 
 
 @staticmethod
-def XMLserialization(data):
-    root = ET.Element("books")
-    bookName = ET.SubElement(root, "id-"+str(data.serial_number))
-    bName = ET.SubElement(bookName, "Name")
-    bName.text = data.name
-    bPrice = ET.SubElement(bookName, "Price")
-    bPrice.text = str(data.price)
+def XMLserialization(data: dict, path: str):
+    root = ET.Element("Books")
+    for el in data:
+        mId = ET.Element("id-" + str(el["serial_number"]))
+        mName = ET.SubElement(mId, "Name")
+        mName.text = el["name"]
+        mPrice = ET.SubElement(mId, "Price")
+        mPrice.text = str(el["price"])
+        root.append(mId)
 
     s = ET.tostring(root, encoding="utf-8", method="xml")
     s = s.decode("UTF-8")
-    with open(f"{data.name}.xml", "w") as wf:
-        wf.write(s)
+    try:
+        with open(path, "w") as wf:
+            wf.write(s)
+    except FileNotFoundError:
+        print("Не найден файл: "+path)
 
 
 @staticmethod
